@@ -5,437 +5,622 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive K3s Cluster Builder</title>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React and ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Lucide React Icons -->
-    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.js"></script>
-    
-    <!-- Babel for JSX transformation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+    <!-- Embedded Tailwind CSS (Production Safe) -->
     <style>
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8fafc;
+        /* Reset and base styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; line-height: 1.6; }
+        
+        /* Utility classes (Tailwind-inspired) */
+        .container { max-width: 1024px; margin: 0 auto; }
+        .bg-white { background-color: #ffffff; }
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-gray-900 { background-color: #111827; }
+        .bg-blue-50 { background-color: #eff6ff; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .bg-green-50 { background-color: #f0fdf4; }
+        .bg-green-600 { background-color: #16a34a; }
+        .bg-gray-600 { background-color: #4b5563; }
+        .bg-gray-800 { background-color: #1f2937; }
+        
+        .text-white { color: #ffffff; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-800 { color: #1f2937; }
+        .text-blue-100 { color: #dbeafe; }
+        .text-blue-600 { color: #2563eb; }
+        .text-blue-700 { color: #1d4ed8; }
+        .text-green-600 { color: #16a34a; }
+        .text-green-700 { color: #15803d; }
+        .text-green-800 { color: #166534; }
+        .text-orange-600 { color: #ea580c; }
+        .text-yellow-300 { color: #fde047; }
+        .text-blue-400 { color: #60a5fa; }
+        .text-green-400 { color: #4ade80; }
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-400 { color: #9ca3af; }
+        
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        
+        .m-4 { margin: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-full { border-radius: 9999px; }
+        .rounded-t-lg { border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; }
+        .rounded-b-lg { border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
+        
+        .border { border-width: 1px; border-color: #d1d5db; }
+        .border-2 { border-width: 2px; }
+        .border-t { border-top-width: 1px; border-color: #d1d5db; }
+        .border-b { border-bottom-width: 1px; border-color: #d1d5db; }
+        .border-gray-200 { border-color: #e5e7eb; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .border-blue-300 { border-color: #93c5fd; }
+        .border-green-200 { border-color: #bbf7d0; }
+        .border-green-300 { border-color: #86efac; }
+        .border-l-3 { border-left-width: 3px; }
+        
+        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .hidden { display: none; }
+        .block { display: block; }
+        
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-1 { flex: 1 1 0%; }
+        .flex-shrink-0 { flex-shrink: 0; }
+        
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace; }
+        
+        .w-3 { width: 0.75rem; }
+        .w-5 { width: 1.25rem; }
+        .w-full { width: 100%; }
+        .h-3 { height: 0.75rem; }
+        .h-5 { height: 1.25rem; }
+        .h-80 { height: 20rem; }
+        .max-w-4xl { max-width: 56rem; }
+        
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        
+        .cursor-pointer { cursor: pointer; }
+        .cursor-not-allowed { cursor: not-allowed; }
+        
+        .overflow-y-auto { overflow-y: auto; }
+        .whitespace-pre-line { white-space: pre-line; }
+        
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .duration-300 { transition-duration: 300ms; }
+        .duration-500 { transition-duration: 500ms; }
+        .ease-out { transition-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+        
+        .opacity-50 { opacity: 0.5; }
+        
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+        .hover\:bg-gray-700:hover { background-color: #374151; }
+        .hover\:bg-gray-800:hover { background-color: #1f2937; }
+        .hover\:bg-gray-900:hover { background-color: #111827; }
+        .hover\:bg-green-700:hover { background-color: #15803d; }
+        .hover\:border-gray-300:hover { border-color: #d1d5db; }
+        .hover\:bg-gray-50:hover { background-color: #f9fafb; }
+        
+        .disabled\:opacity-50:disabled { opacity: 0.5; }
+        .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+        
+        /* Custom styles */
+        .gradient-bg {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+        }
+        
+        .gradient-progress {
+            background: linear-gradient(90deg, #2563eb 0%, #16a34a 100%);
+        }
+        
+        .terminal-bg {
+            background-color: #0f172a;
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Icons (Simple CSS versions) */
+        .icon {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            fill: currentColor;
+        }
+        
+        .icon-lg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        
+        /* Grid responsive */
+        @media (min-width: 768px) {
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        
+        /* Button styles */
+        button {
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background-color: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background-color: #4b5563;
+            color: white;
+            padding: 0.5rem 1rem;
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #374151;
+        }
+        
+        .step-card {
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: white;
+        }
+        
+        .step-card:hover {
+            border-color: #d1d5db;
+            background-color: #f9fafb;
+        }
+        
+        .step-card.completed {
+            border-color: #86efac;
+            background-color: #f0fdf4;
+        }
+        
+        .step-card.running {
+            border-color: #93c5fd;
+            background-color: #eff6ff;
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="container m-4">
+        <div class="bg-white rounded-lg shadow-xl border">
+            <!-- Header -->
+            <div class="gradient-bg p-6 rounded-t-lg">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-white mb-2 flex items-center justify-center gap-3">
+                        <span style="font-size: 1.5rem;">☕</span>
+                        Interactive K3s Deployment Demo
+                    </h2>
+                    <p class="text-blue-100">Experience the full deployment process — click through each step!</p>
+                </div>
+            </div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { Play, CheckCircle, Loader, Coffee, Terminal, Server, Zap } = LucideReact;
-
-        const K3sInteractiveDemo = () => {
-            const [currentStep, setCurrentStep] = useState(0);
-            const [completedSteps, setCompletedSteps] = useState(new Set());
-            const [isRunning, setIsRunning] = useState(false);
-            const [deploymentStats, setDeploymentStats] = useState({
-                vmsCreated: 0,
-                commandsRun: 0,
-                timeElapsed: 0
-            });
-
-            const steps = [
-                {
-                    id: 'env-setup',
-                    title: '☕ Setting up the environment',
-                    description: 'Installing Go, Pulumi, and generating SSH keys',
-                    command: 'brew install go pulumi && ssh-keygen -t rsa',
-                    output: 'Installing packages...\ngo version go1.21.0 darwin/arm64\npulumi version v3.180.0\nGenerating SSH keys...\n✅ Environment ready for deployment!',
-                    duration: 2500,
-                    insight: 'This is where most tutorials skip the boring setup. Don\'t skip it!'
-                },
-                {
-                    id: 'proxmox-auth',
-                    title: '🔐 Connecting to Proxmox',
-                    description: 'Setting up API authentication with Proxmox VE',
-                    command: 'export PROXMOX_API_TOKEN="..." && pulumi config set endpoint',
-                    output: 'Connecting to Proxmox at 192.168.90.102:8006...\nValidating API token...\nTesting SSH connection...\n✅ Authentication successful!',
-                    duration: 2000,
-                    insight: 'API tokens are way better than passwords. Trust me on this one.'
-                },
-                {
-                    id: 'vm-templates',
-                    title: '📦 Creating VM templates',
-                    description: 'Setting up Ubuntu cloud image template for cloning',
-                    command: 'qm create 9000 --name ubuntu-template && qm template 9000',
-                    output: 'Downloading Ubuntu 22.04 cloud image...\nCreating VM template with ID 9000...\nConfiguring cloud-init settings...\n✅ Template ready for cloning!',
-                    duration: 3500,
-                    insight: 'Templates are like Docker images for VMs. Create once, clone many times.'
-                },
-                {
-                    id: 'loadbalancer',
-                    title: '⚖️ Deploying load balancer',
-                    description: 'Creating HAProxy VM to distribute K3s API requests',
-                    command: 'pulumi up # Creating loadbalancer VM...',
-                    output: 'Creating VM: k3s-loadbalancer (192.168.90.190)\nCloning from template 9000...\nWaiting for VM to boot...\nInstalling HAProxy...\nConfiguring backend servers...\n✅ Load balancer ready and listening on port 6443!',
-                    duration: 4000,
-                    insight: 'HAProxy will automatically discover our K3s servers. No manual config needed!'
-                },
-                {
-                    id: 'k3s-cluster',
-                    title: '🚀 Building K3s cluster',
-                    description: 'Creating 3 K3s server VMs with high availability',
-                    command: 'pulumi up # Creating K3s servers...',
-                    output: 'Creating VM: k3s-server-1 (192.168.90.187)\nCreating VM: k3s-server-2 (192.168.90.188)\nCreating VM: k3s-server-3 (192.168.90.189)\nAll VMs created successfully!\n\nInstalling K3s on first server with --cluster-init...\nGenerating cluster token...\nJoining additional servers to cluster...\n✅ 3-node HA cluster formed!',
-                    duration: 6000,
-                    insight: 'The first server initializes the cluster, others join automatically. Like a fancy kubernetes dance!'
-                },
-                {
-                    id: 'verification',
-                    title: '✅ Testing the cluster',
-                    description: 'Extracting kubeconfig and verifying everything works',
-                    command: 'kubectl get nodes --kubeconfig=./kubeconfig',
-                    output: 'Extracting kubeconfig from k3s-server-1...\nUpdating server URL to use load balancer...\nSaving kubeconfig to ./kubeconfig\n\nTesting cluster connectivity...\n\nNAME           STATUS   ROLES                  AGE\nk3s-server-1   Ready    control-plane,master   2m\nk3s-server-2   Ready    control-plane,master   1m\nk3s-server-3   Ready    control-plane,master   1m\n\n🎉 High-availability K3s cluster is ready!\n💰 Total cost: $0 (running on your hardware)\n⚡ Time to deploy: ~12 minutes',
-                    duration: 3000,
-                    insight: 'And just like that, you have a production-ready Kubernetes cluster!'
-                }
-            ];
-
-            const runStep = async (stepIndex) => {
-                setIsRunning(true);
-                setCurrentStep(stepIndex);
+            <!-- Controls -->
+            <div class="p-4 bg-gray-50 border-b flex items-center justify-between flex-wrap gap-4">
+                <div class="flex gap-3">
+                    <button id="runAllBtn" class="btn-primary flex items-center gap-2">
+                        <span>▶️</span>
+                        <span id="runAllText">Run Full Demo</span>
+                    </button>
+                    <button id="resetBtn" class="btn-secondary">Reset</button>
+                </div>
                 
-                const interval = setInterval(() => {
-                    setDeploymentStats(prev => ({
-                        vmsCreated: stepIndex >= 3 ? Math.min(4, prev.vmsCreated + 1) : prev.vmsCreated,
-                        commandsRun: prev.commandsRun + 1,
-                        timeElapsed: prev.timeElapsed + 1
-                    }));
-                }, 200);
-                
-                await new Promise(resolve => setTimeout(resolve, steps[stepIndex].duration));
-                
-                clearInterval(interval);
-                setCompletedSteps(prev => new Set([...prev, stepIndex]));
-                setIsRunning(false);
-            };
+                <!-- Live Stats -->
+                <div class="flex gap-4 text-sm">
+                    <div class="flex items-center gap-1">
+                        <span style="color: #2563eb;">🖥️</span>
+                        <span id="vmsCount">0 VMs</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span style="color: #16a34a;">💻</span>
+                        <span id="commandsCount">0 Commands</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span style="color: #ea580c;">⚡</span>
+                        <span id="timeCount">0s</span>
+                    </div>
+                </div>
+            </div>
 
-            const runAll = async () => {
-                for (let i = 0; i < steps.length; i++) {
-                    await runStep(i);
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                }
-            };
+            <!-- Main Content -->
+            <div class="grid md:grid-cols-2">
+                <!-- Steps List -->
+                <div class="p-6 bg-white">
+                    <h3 class="font-semibold text-lg mb-4 text-gray-800">Deployment Steps</h3>
+                    <div id="stepsList" class="space-y-3">
+                        <!-- Steps will be populated by JavaScript -->
+                    </div>
+                </div>
 
-            const reset = () => {
-                setCurrentStep(0);
-                setCompletedSteps(new Set());
-                setIsRunning(false);
-                setDeploymentStats({ vmsCreated: 0, commandsRun: 0, timeElapsed: 0 });
-            };
-
-            return React.createElement('div', {
-                className: "max-w-4xl mx-auto bg-white rounded-lg shadow-xl border border-gray-200 m-4"
-            }, [
-                // Header
-                React.createElement('div', {
-                    key: 'header',
-                    className: "bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-t-lg"
-                }, [
-                    React.createElement('div', {
-                        key: 'header-content',
-                        className: "text-center"
-                    }, [
-                        React.createElement('h2', {
-                            key: 'title',
-                            className: "text-2xl font-bold text-white mb-2 flex items-center justify-center gap-2"
-                        }, [
-                            React.createElement(Coffee, { key: 'coffee-icon', className: "text-yellow-300" }),
-                            'Interactive K3s Deployment Demo'
-                        ]),
-                        React.createElement('p', {
-                            key: 'subtitle',
-                            className: "text-blue-100"
-                        }, 'Experience the full deployment process — click through each step!')
-                    ])
-                ]),
-
-                // Controls
-                React.createElement('div', {
-                    key: 'controls',
-                    className: "p-4 bg-gray-50 border-b flex items-center justify-between flex-wrap gap-4"
-                }, [
-                    React.createElement('div', {
-                        key: 'control-buttons',
-                        className: "flex gap-3"
-                    }, [
-                        React.createElement('button', {
-                            key: 'run-all',
-                            onClick: runAll,
-                            disabled: isRunning,
-                            className: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
-                        }, [
-                            React.createElement(Play, { key: 'play-icon', size: 16 }),
-                            isRunning ? 'Running...' : 'Run Full Demo'
-                        ]),
-                        React.createElement('button', {
-                            key: 'reset',
-                            onClick: reset,
-                            disabled: isRunning,
-                            className: "px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
-                        }, 'Reset')
-                    ]),
+                <!-- Terminal Output -->
+                <div class="terminal-bg p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="flex gap-1">
+                            <div class="w-3 h-3 rounded-full" style="background-color: #ef4444;"></div>
+                            <div class="w-3 h-3 rounded-full" style="background-color: #eab308;"></div>
+                            <div class="w-3 h-3 rounded-full" style="background-color: #22c55e;"></div>
+                        </div>
+                        <span class="text-gray-400 text-sm font-mono">terminal</span>
+                    </div>
                     
-                    // Live Stats
-                    React.createElement('div', {
-                        key: 'stats',
-                        className: "flex gap-4 text-sm"
-                    }, [
-                        React.createElement('div', {
-                            key: 'vms-stat',
-                            className: "flex items-center gap-1"
-                        }, [
-                            React.createElement(Server, { key: 'server-icon', size: 16, className: "text-blue-600" }),
-                            React.createElement('span', { key: 'vms-count' }, `${deploymentStats.vmsCreated} VMs`)
-                        ]),
-                        React.createElement('div', {
-                            key: 'commands-stat',
-                            className: "flex items-center gap-1"
-                        }, [
-                            React.createElement(Terminal, { key: 'terminal-icon', size: 16, className: "text-green-600" }),
-                            React.createElement('span', { key: 'commands-count' }, `${deploymentStats.commandsRun} Commands`)
-                        ]),
-                        React.createElement('div', {
-                            key: 'time-stat',
-                            className: "flex items-center gap-1"
-                        }, [
-                            React.createElement(Zap, { key: 'zap-icon', size: 16, className: "text-orange-600" }),
-                            React.createElement('span', { key: 'time-count' }, `${deploymentStats.timeElapsed}s`)
-                        ])
-                    ])
-                ]),
+                    <div id="terminalContent" class="h-80 overflow-y-auto font-mono text-sm">
+                        <div class="text-gray-500">👆 Click a step above to begin deployment</div>
+                    </div>
+                </div>
+            </div>
 
-                // Main Content
-                React.createElement('div', {
-                    key: 'main-content',
-                    className: "grid md:grid-cols-2 gap-0"
-                }, [
-                    // Steps List
-                    React.createElement('div', {
-                        key: 'steps-list',
-                        className: "p-6 bg-white"
-                    }, [
-                        React.createElement('h3', {
-                            key: 'steps-title',
-                            className: "font-semibold text-lg mb-4 text-gray-800"
-                        }, 'Deployment Steps'),
-                        React.createElement('div', {
-                            key: 'steps-container',
-                            className: "space-y-3"
-                        }, steps.map((step, index) => 
-                            React.createElement('div', {
-                                key: step.id,
-                                className: `p-4 rounded-lg border-2 transition-all duration-300 cursor-pointer ${
-                                    completedSteps.has(index) 
-                                        ? 'border-green-300 bg-green-50' 
-                                        : currentStep === index && isRunning
-                                        ? 'border-blue-300 bg-blue-50 animate-pulse'
-                                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-                                }`,
-                                onClick: () => !isRunning && runStep(index)
-                            }, [
-                                React.createElement('div', {
-                                    key: 'step-content',
-                                    className: "flex items-start gap-3"
-                                }, [
-                                    React.createElement('div', {
-                                        key: 'step-icon',
-                                        className: "flex-shrink-0 mt-1"
-                                    }, 
-                                        completedSteps.has(index) ? 
-                                            React.createElement(CheckCircle, { className: "text-green-600", size: 20 }) :
-                                            currentStep === index && isRunning ?
-                                                React.createElement(Loader, { className: "text-blue-600 animate-spin", size: 20 }) :
-                                                React.createElement('div', {
-                                                    className: "w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center"
-                                                }, React.createElement('span', {
-                                                    className: "text-xs font-medium text-gray-500"
-                                                }, index + 1))
-                                    ),
-                                    React.createElement('div', {
-                                        key: 'step-details',
-                                        className: "flex-1"
-                                    }, [
-                                        React.createElement('h4', {
-                                            key: 'step-title',
-                                            className: "font-medium text-gray-800 text-sm"
-                                        }, step.title),
-                                        React.createElement('p', {
-                                            key: 'step-desc',
-                                            className: "text-xs text-gray-600 mt-1"
-                                        }, step.description),
-                                        completedSteps.has(index) && React.createElement('div', {
-                                            key: 'step-insight',
-                                            className: "mt-2 p-2 bg-blue-50 rounded text-xs text-blue-700 border-l-3 border-blue-300"
-                                        }, `💡 ${step.insight}`)
-                                    ])
-                                ])
-                            ])
-                        ))
-                    ]),
+            <!-- Progress Bar -->
+            <div class="p-6 bg-gray-50 border-t">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-medium text-gray-700">Overall Progress</span>
+                    <span id="progressText" class="text-sm text-gray-500">0 of 6 steps completed</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full" style="height: 12px;">
+                    <div id="progressBar" class="gradient-progress rounded-full transition-all duration-500 ease-out" style="height: 12px; width: 0%;"></div>
+                </div>
+                
+                <div id="successMessage" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg hidden">
+                    <div class="flex items-center gap-2 text-green-800 mb-2">
+                        <span>✅</span>
+                        <span class="font-semibold">🎉 Congratulations!</span>
+                    </div>
+                    <p class="text-green-700 text-sm mb-3">
+                        You've successfully deployed a production-ready, high-availability K3s cluster! 
+                        Your infrastructure is now ready for real workloads.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="window.open('https://k3s.io/docs/examples/', '_blank')" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">
+                            Deploy Apps
+                        </button>
+                        <button id="runAgainBtn" class="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700">
+                            Run Again
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-                    // Terminal Output
-                    React.createElement('div', {
-                        key: 'terminal',
-                        className: "bg-gray-900 p-6"
-                    }, [
-                        React.createElement('div', {
-                            key: 'terminal-header',
-                            className: "flex items-center gap-2 mb-4"
-                        }, [
-                            React.createElement('div', {
-                                key: 'terminal-buttons',
-                                className: "flex gap-1"
-                            }, [
-                                React.createElement('div', { key: 'red-btn', className: "w-3 h-3 rounded-full bg-red-500" }),
-                                React.createElement('div', { key: 'yellow-btn', className: "w-3 h-3 rounded-full bg-yellow-500" }),
-                                React.createElement('div', { key: 'green-btn', className: "w-3 h-3 rounded-full bg-green-500" })
-                            ]),
-                            React.createElement('span', {
-                                key: 'terminal-title',
-                                className: "text-gray-400 text-sm font-mono"
-                            }, 'terminal')
-                        ]),
-                        
-                        React.createElement('div', {
-                            key: 'terminal-content',
-                            className: "h-80 overflow-y-auto font-mono text-sm"
-                        }, 
-                            currentStep < steps.length && React.createElement('div', {
-                                key: 'terminal-output',
-                                className: "space-y-2"
-                            }, [
-                                React.createElement('div', {
-                                    key: 'command',
-                                    className: "text-blue-400"
-                                }, `$ ${steps[currentStep].command}`),
-                                
-                                (completedSteps.has(currentStep) || isRunning) && React.createElement('div', {
-                                    key: 'output',
-                                    className: "text-green-400 whitespace-pre-line"
-                                }, steps[currentStep].output),
+            <!-- Footer CTA -->
+            <div class="p-6 bg-gray-50 rounded-b-lg border-t">
+                <div class="text-center">
+                    <h3 class="font-semibold text-gray-800 mb-2">Ready to build your own?</h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Get the complete code, configuration files, and step-by-step guide
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <button onclick="window.open('#', '_blank')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+                            📚 Full Tutorial
+                        </button>
+                        <button onclick="window.open('#', '_blank')" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm font-medium">
+                            💻 Source Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                                !completedSteps.has(currentStep) && !isRunning && React.createElement('div', {
-                                    key: 'prompt',
-                                    className: "text-gray-500 italic"
-                                }, '👆 Click the step above to run this command')
-                            ])
-                        )
-                    ])
-                ]),
-
-                // Progress Bar
-                React.createElement('div', {
-                    key: 'progress',
-                    className: "p-6 bg-gray-50 border-t"
-                }, [
-                    React.createElement('div', {
-                        key: 'progress-header',
-                        className: "flex items-center justify-between mb-3"
-                    }, [
-                        React.createElement('span', {
-                            key: 'progress-label',
-                            className: "text-sm font-medium text-gray-700"
-                        }, 'Overall Progress'),
-                        React.createElement('span', {
-                            key: 'progress-count',
-                            className: "text-sm text-gray-500"
-                        }, `${completedSteps.size} of ${steps.length} steps completed`)
-                    ]),
-                    React.createElement('div', {
-                        key: 'progress-bar-bg',
-                        className: "w-full bg-gray-200 rounded-full h-3"
-                    }, 
-                        React.createElement('div', {
-                            key: 'progress-bar',
-                            className: "bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500 ease-out",
-                            style: { width: `${(completedSteps.size / steps.length) * 100}%` }
-                        })
-                    ),
-                    
-                    completedSteps.size === steps.length && React.createElement('div', {
-                        key: 'success-message',
-                        className: "mt-4 p-4 bg-green-50 border border-green-200 rounded-lg"
-                    }, [
-                        React.createElement('div', {
-                            key: 'success-header',
-                            className: "flex items-center gap-2 text-green-800 mb-2"
-                        }, [
-                            React.createElement(CheckCircle, { key: 'success-icon', size: 20 }),
-                            React.createElement('span', {
-                                key: 'success-title',
-                                className: "font-semibold"
-                            }, '🎉 Congratulations!')
-                        ]),
-                        React.createElement('p', {
-                            key: 'success-text',
-                            className: "text-green-700 text-sm mb-3"
-                        }, 'You\'ve successfully deployed a production-ready, high-availability K3s cluster! Your infrastructure is now ready for real workloads.'),
-                        React.createElement('div', {
-                            key: 'success-buttons',
-                            className: "flex flex-wrap gap-2"
-                        }, [
-                            React.createElement('button', {
-                                key: 'deploy-apps',
-                                onClick: () => window.open('https://k3s.io/docs/examples/', '_blank'),
-                                className: "px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                            }, 'Deploy Apps'),
-                            React.createElement('button', {
-                                key: 'run-again',
-                                onClick: reset,
-                                className: "px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-                            }, 'Run Again')
-                        ])
-                    ])
-                ]),
-
-                // Footer CTA
-                React.createElement('div', {
-                    key: 'footer',
-                    className: "p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-b-lg border-t"
-                }, 
-                    React.createElement('div', {
-                        key: 'footer-content',
-                        className: "text-center"
-                    }, [
-                        React.createElement('h3', {
-                            key: 'footer-title',
-                            className: "font-semibold text-gray-800 mb-2"
-                        }, 'Ready to build your own?'),
-                        React.createElement('p', {
-                            key: 'footer-text',
-                            className: "text-sm text-gray-600 mb-4"
-                        }, 'Get the complete code, configuration files, and step-by-step guide'),
-                        React.createElement('div', {
-                            key: 'footer-buttons',
-                            className: "flex flex-wrap justify-center gap-3"
-                        }, [
-                            React.createElement('button', {
-                                key: 'tutorial-btn',
-                                onClick: () => window.open('#', '_blank'),
-                                className: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-                            }, '📚 Full Tutorial'),
-                            React.createElement('button', {
-                                key: 'source-btn',
-                                onClick: () => window.open('#', '_blank'),
-                                className: "px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm font-medium"
-                            }, '💻 Source Code')
-                        ])
-                    ])
-                )
-            ]);
+    <script>
+        // Demo state
+        let currentStep = 0;
+        let completedSteps = new Set();
+        let isRunning = false;
+        let deploymentStats = {
+            vmsCreated: 0,
+            commandsRun: 0,
+            timeElapsed: 0
         };
 
-        // Render the component
-        ReactDOM.render(React.createElement(K3sInteractiveDemo), document.getElementById('root'));
+        // Steps configuration
+        const steps = [
+            {
+                id: 'env-setup',
+                title: '☕ Setting up the environment',
+                description: 'Installing Go, Pulumi, and generating SSH keys',
+                command: 'brew install go pulumi && ssh-keygen -t rsa',
+                output: 'Installing packages...\ngo version go1.21.0 darwin/arm64\npulumi version v3.180.0\nGenerating SSH keys...\n✅ Environment ready for deployment!',
+                duration: 2500,
+                insight: 'This is where most tutorials skip the boring setup. Don\'t skip it!'
+            },
+            {
+                id: 'proxmox-auth',
+                title: '🔐 Connecting to Proxmox',
+                description: 'Setting up API authentication with Proxmox VE',
+                command: 'export PROXMOX_API_TOKEN="..." && pulumi config set endpoint',
+                output: 'Connecting to Proxmox at 192.168.90.102:8006...\nValidating API token...\nTesting SSH connection...\n✅ Authentication successful!',
+                duration: 2000,
+                insight: 'API tokens are way better than passwords. Trust me on this one.'
+            },
+            {
+                id: 'vm-templates',
+                title: '📦 Creating VM templates',
+                description: 'Setting up Ubuntu cloud image template for cloning',
+                command: 'qm create 9000 --name ubuntu-template && qm template 9000',
+                output: 'Downloading Ubuntu 22.04 cloud image...\nCreating VM template with ID 9000...\nConfiguring cloud-init settings...\n✅ Template ready for cloning!',
+                duration: 3500,
+                insight: 'Templates are like Docker images for VMs. Create once, clone many times.'
+            },
+            {
+                id: 'loadbalancer',
+                title: '⚖️ Deploying load balancer',
+                description: 'Creating HAProxy VM to distribute K3s API requests',
+                command: 'pulumi up # Creating loadbalancer VM...',
+                output: 'Creating VM: k3s-loadbalancer (192.168.90.190)\nCloning from template 9000...\nWaiting for VM to boot...\nInstalling HAProxy...\nConfiguring backend servers...\n✅ Load balancer ready and listening on port 6443!',
+                duration: 4000,
+                insight: 'HAProxy will automatically discover our K3s servers. No manual config needed!'
+            },
+            {
+                id: 'k3s-cluster',
+                title: '🚀 Building K3s cluster',
+                description: 'Creating 3 K3s server VMs with high availability',
+                command: 'pulumi up # Creating K3s servers...',
+                output: 'Creating VM: k3s-server-1 (192.168.90.187)\nCreating VM: k3s-server-2 (192.168.90.188)\nCreating VM: k3s-server-3 (192.168.90.189)\nAll VMs created successfully!\n\nInstalling K3s on first server with --cluster-init...\nGenerating cluster token...\nJoining additional servers to cluster...\n✅ 3-node HA cluster formed!',
+                duration: 6000,
+                insight: 'The first server initializes the cluster, others join automatically. Like a fancy kubernetes dance!'
+            },
+            {
+                id: 'verification',
+                title: '✅ Testing the cluster',
+                description: 'Extracting kubeconfig and verifying everything works',
+                command: 'kubectl get nodes --kubeconfig=./kubeconfig',
+                output: 'Extracting kubeconfig from k3s-server-1...\nUpdating server URL to use load balancer...\nSaving kubeconfig to ./kubeconfig\n\nTesting cluster connectivity...\n\nNAME           STATUS   ROLES                  AGE\nk3s-server-1   Ready    control-plane,master   2m\nk3s-server-2   Ready    control-plane,master   1m\nk3s-server-3   Ready    control-plane,master   1m\n\n🎉 High-availability K3s cluster is ready!\n💰 Total cost: $0 (running on your hardware)\n⚡ Time to deploy: ~12 minutes',
+                duration: 3000,
+                insight: 'And just like that, you have a production-ready Kubernetes cluster!'
+            }
+        ];
+
+        // Initialize the demo
+        function init() {
+            renderSteps();
+            setupEventListeners();
+        }
+
+        // Render steps list
+        function renderSteps() {
+            const stepsList = document.getElementById('stepsList');
+            stepsList.innerHTML = '';
+
+            steps.forEach((step, index) => {
+                const stepElement = document.createElement('div');
+                stepElement.className = getStepClass(index);
+                stepElement.onclick = () => !isRunning && runStep(index);
+                
+                stepElement.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 mt-1">
+                            ${getStepIcon(index)}
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800 text-sm">${step.title}</h4>
+                            <p class="text-xs text-gray-600 mt-1">${step.description}</p>
+                            ${completedSteps.has(index) ? `
+                                <div class="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-700 border-l-3" style="border-color: #93c5fd;">
+                                    💡 ${step.insight}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                stepsList.appendChild(stepElement);
+            });
+        }
+
+        // Get step CSS class
+        function getStepClass(index) {
+            if (completedSteps.has(index)) {
+                return 'step-card completed';
+            } else if (currentStep === index && isRunning) {
+                return 'step-card running';
+            } else {
+                return 'step-card';
+            }
+        }
+
+        // Get step icon
+        function getStepIcon(index) {
+            if (completedSteps.has(index)) {
+                return '<span style="color: #16a34a; font-size: 1.25rem;">✅</span>';
+            } else if (currentStep === index && isRunning) {
+                return '<span class="animate-spin" style="color: #2563eb; font-size: 1.25rem;">⚙️</span>';
+            } else {
+                return `<div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                    <span class="text-xs font-medium text-gray-500">${index + 1}</span>
+                </div>`;
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('runAllBtn').onclick = runAll;
+            document.getElementById('resetBtn').onclick = reset;
+            document.getElementById('runAgainBtn').onclick = reset;
+        }
+
+        // Run a single step
+        async function runStep(stepIndex) {
+            if (isRunning) return;
+            
+            isRunning = true;
+            currentStep = stepIndex;
+            updateUI();
+            
+            // Show command in terminal
+            updateTerminal(`$ ${steps[stepIndex].command}`, '');
+            
+            // Simulate deployment progress
+            const interval = setInterval(() => {
+                deploymentStats.commandsRun += 1;
+                deploymentStats.timeElapsed += 1;
+                if (stepIndex >= 3) {
+                    deploymentStats.vmsCreated = Math.min(4, deploymentStats.vmsCreated + 1);
+                }
+                updateStats();
+            }, 200);
+            
+            // Wait for step duration
+            await new Promise(resolve => setTimeout(resolve, steps[stepIndex].duration));
+            
+            // Clear interval and complete step
+            clearInterval(interval);
+            completedSteps.add(stepIndex);
+            isRunning = false;
+            
+            // Show output in terminal
+            updateTerminal(`$ ${steps[stepIndex].command}`, steps[stepIndex].output);
+            updateUI();
+        }
+
+        // Run all steps
+        async function runAll() {
+            for (let i = 0; i < steps.length; i++) {
+                await runStep(i);
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+        }
+
+        // Reset demo
+        function reset() {
+            currentStep = 0;
+            completedSteps.clear();
+            isRunning = false;
+            deploymentStats = { vmsCreated: 0, commandsRun: 0, timeElapsed: 0 };
+            
+            updateUI();
+            updateStats();
+            updateTerminal('', '👆 Click a step above to begin deployment');
+        }
+
+        // Update UI
+        function updateUI() {
+            renderSteps();
+            updateProgress();
+            updateButtons();
+            
+            if (completedSteps.size === steps.length) {
+                document.getElementById('successMessage').classList.remove('hidden');
+            } else {
+                document.getElementById('successMessage').classList.add('hidden');
+            }
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const progress = (completedSteps.size / steps.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `${completedSteps.size} of ${steps.length} steps completed`;
+        }
+
+        // Update buttons
+        function updateButtons() {
+            const runAllBtn = document.getElementById('runAllBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const runAllText = document.getElementById('runAllText');
+            
+            runAllBtn.disabled = isRunning;
+            resetBtn.disabled = isRunning;
+            runAllText.textContent = isRunning ? 'Running...' : 'Run Full Demo';
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('vmsCount').textContent = `${deploymentStats.vmsCreated} VMs`;
+            document.getElementById('commandsCount').textContent = `${deploymentStats.commandsRun} Commands`;
+            document.getElementById('timeCount').textContent = `${deploymentStats.timeElapsed}s`;
+        }
+
+        // Update terminal
+        function updateTerminal(command, output) {
+            const terminal = document.getElementById('terminalContent');
+            
+            if (!command && !output) {
+                terminal.innerHTML = '<div class="text-gray-500">👆 Click a step above to begin deployment</div>';
+                return;
+            }
+            
+            let html = '';
+            if (command) {
+                html += `<div class="text-blue-400">${command}</div>`;
+            }
+            if (output) {
+                html += `<div class="text-green-400 whitespace-pre-line mt-2">${output}</div>`;
+            }
+            if (!output && command) {
+                html += `<div class="text-gray-500 mt-2">Running...</div>`;
+            }
+            
+            terminal.innerHTML = html;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
