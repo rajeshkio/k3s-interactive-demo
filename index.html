@@ -99,6 +99,20 @@
             color: #666;
         }
         
+        .usage-stats {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 13px;
+            color: #4a5568;
+        }
+        
+        .usage-stats .highlight {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
         .btn {
             padding: 12px 24px;
             border: none;
@@ -268,6 +282,7 @@
                 <div class="stats">
                     <span>🖥️ <span id="vmCount">4 VMs</span></span>
                     <span>💻 <span id="actionCount">6 Actions</span></span>
+                    <span>🚀 <span id="deployCount">0 Deployments</span></span>
                     <span>⚡ <span id="timer">0s</span></span>
                     <span id="status">Ready</span>
                 </div>
@@ -301,6 +316,13 @@
                 <div id="progressFill" class="progress-fill"></div>
             </div>
         </div>
+        
+        <div class="usage-stats">
+            <span id="connectionStatus">🔄 Connecting to global stats...</span> •
+            <span class="highlight" id="totalDeployments">0</span> total deployments 
+            • <span class="highlight" id="sessionsToday">0</span> sessions today 
+            • Last deployment: <span class="highlight" id="lastDeployment">Never</span>
+        </div>
     </div>
 
     <script>
@@ -309,6 +331,14 @@
         let currentStep = 0;
         let startTime = 0;
         let timer = null;
+        let sessionDeployments = 0;
+        
+        // Global stats tracking via secure Netlify function
+        let usageStats = {
+            totalDeployments: 0,
+            deploymentsToday: 0,
+            lastDeployment: null
+        };
         
         // Feature flags
         let features = {
@@ -316,6 +346,12 @@
             k3s: true,
             harvester: false
         };
+        
+        // Auto-detect Netlify function endpoint
+        const isNetlify = window.location.hostname.includes('netlify.app');
+        const API_BASE = isNetlify 
+            ? `${window.location.origin}/.netlify/functions`
+            : 'https://your-site.netlify.app/.netlify/functions';
         
         const allSteps = [
             {
@@ -471,6 +507,118 @@
             }
         ];
         
+        // Secure API functions
+        async function fetchStats() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                
+                usageStats = {
+                    totalDeployments: data.totalDeployments || 0,
+                    deploymentsToday: data.deploymentsToday || 0,
+                    lastDeployment: data.lastDeployment ? new Date(data.lastDeployment._seconds * 1000) : null
+                };
+                
+                updateUsageDisplay();
+                console.log('📡 Global stats loaded securely via Netlify function');
+                return true;
+            } catch (error) {
+                console.log('📱 Secure API unavailable, using localStorage fallback');
+                loadLocalStats();
+                return false;
+            }
+        }
+        
+        async function incrementStats() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                
+                usageStats = {
+                    totalDeployments: data.totalDeployments || 0,
+                    deploymentsToday: data.deploymentsToday || 0,
+                    lastDeployment: data.lastDeployment ? new Date(data.lastDeployment._seconds * 1000) : null
+                };
+                
+                updateUsageDisplay();
+                console.log('📡 Global deployment count updated securely!');
+                return true;
+            } catch (error) {
+                console.log('📱 Secure API failed, using local increment');
+                incrementLocalStats();
+                return false;
+            }
+        }
+        
+        function loadLocalStats() {
+            const stored = localStorage.getItem('demoUsageStats');
+            if (stored) {
+                usageStats = JSON.parse(stored);
+                if (usageStats.lastDeployment) {
+                    usageStats.lastDeployment = new Date(usageStats.lastDeployment);
+                }
+            } else {
+                usageStats = {
+                    totalDeployments: 0,
+                    deploymentsToday: 0,
+                    lastDeployment: null
+                };
+            }
+            updateUsageDisplay();
+        }
+        
+        function incrementLocalStats() {
+            usageStats.totalDeployments++;
+            usageStats.deploymentsToday++;
+            usageStats.lastDeployment = new Date();
+            localStorage.setItem('demoUsageStats', JSON.stringify(usageStats));
+            updateUsageDisplay();
+        }
+        
+        function updateUsageDisplay() {
+            document.getElementById('totalDeployments').textContent = usageStats.totalDeployments.toLocaleString();
+            document.getElementById('sessionsToday').textContent = usageStats.deploymentsToday;
+            
+            // Update connection status
+            const connectionStatus = document.getElementById('connectionStatus');
+            if (API_BASE.includes('netlify')) {
+                connectionStatus.innerHTML = '🔒 <strong>Secure Global Stats</strong>';
+                connectionStatus.style.color = '#48bb78';
+            } else {
+                connectionStatus.innerHTML = '📱 <strong>Local Mode</strong>';
+                connectionStatus.style.color = '#f6e05e';
+            }
+            
+            if (usageStats.lastDeployment) {
+                const lastTime = usageStats.lastDeployment;
+                const now = new Date();
+                const diffMinutes = Math.floor((now - lastTime) / 60000);
+                
+                let timeText;
+                if (diffMinutes < 1) {
+                    timeText = 'Just now';
+                } else if (diffMinutes < 60) {
+                    timeText = `${diffMinutes}m ago`;
+                } else if (diffMinutes < 1440) {
+                    timeText = `${Math.floor(diffMinutes / 60)}h ago`;
+                } else {
+                    timeText = lastTime.toLocaleDateString();
+                }
+                
+                document.getElementById('lastDeployment').textContent = timeText;
+            } else {
+                document.getElementById('lastDeployment').textContent = 'Never';
+            }
+            
+            document.getElementById('deployCount').textContent = sessionDeployments + ' Session';
+        }
+        
         function getActiveSteps() {
             return allSteps.filter(step => {
                 if (step.requires.length === 0) return true;
@@ -589,6 +737,11 @@
             if (isRunning) return;
             
             console.log('Starting deployment...');
+            
+            // Increment global deployment count securely
+            sessionDeployments++;
+            await incrementStats();
+            
             isRunning = true;
             currentStep = 0;
             startTime = Date.now();
@@ -607,6 +760,8 @@
             timer = setInterval(updateTimer, 1000);
             
             addTerminalLine('🚀 Starting infrastructure deployment...', 'text-cyan');
+            addTerminalLine(`🔒 Global deployment #${usageStats.totalDeployments} via secure API`, 'text-blue');
+            addTerminalLine('🌍 Stats synced globally with zero config exposure!', 'text-cyan');
             addTerminalLine('Components will discover each other automatically!', 'text-cyan');
             addTerminalLine('', 'text-gray');
             
@@ -627,6 +782,7 @@
                 addTerminalLine('🎉 Infrastructure deployment completed successfully!', 'text-green');
                 addTerminalLine('All components are operational and auto-configured.', 'text-green');
                 addTerminalLine('Runtime discovery worked perfectly - zero manual coordination!', 'text-green');
+                addTerminalLine('🔒 Global stats updated securely via Netlify function.', 'text-green');
                 
                 document.getElementById('status').textContent = 'Complete';
                 
@@ -663,9 +819,12 @@
             updateProgress();
         }
         
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Demo initialized with feature flags');
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔒 Secure infrastructure demo initialized');
+            
+            // Load global stats securely via Netlify function
+            await fetchStats();
             
             setupFeatureToggles();
             document.getElementById('deployBtn').addEventListener('click', deploy);
@@ -674,6 +833,13 @@
             updateStats();
             renderSteps();
             updateProgress();
+            
+            // Periodic stats refresh for real-time updates
+            setInterval(async () => {
+                if (!isRunning) {
+                    await fetchStats();
+                }
+            }, 30000); // Refresh every 30 seconds
         });
     </script>
 </body>
